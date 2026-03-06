@@ -5,6 +5,7 @@ export default defineConfig({
   out: './src/db/migrations',
   dialect: 'sqlite',
   dbCredentials: {
-    url: 'file:./data/janroku.db',
+    url: process.env.DATABASE_URL || 'file:./data/janroku.db',
+    authToken: process.env.DATABASE_AUTH_TOKEN,
   },
 });

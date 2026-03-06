@@ -1,25 +1,34 @@
 import { createClient } from '@libsql/client';
 import { drizzle } from 'drizzle-orm/libsql';
 import * as schema from './schema';
-import path from 'path';
-import fs from 'fs';
 
-const DB_DIR = path.join(process.cwd(), 'data');
-const DB_PATH = path.join(DB_DIR, 'janroku.db');
+function getClient() {
+  if (process.env.DATABASE_URL) {
+    // Turso (remote)
+    return createClient({
+      url: process.env.DATABASE_URL,
+      authToken: process.env.DATABASE_AUTH_TOKEN,
+    });
+  }
 
-// Ensure data directory exists
-if (!fs.existsSync(DB_DIR)) {
-  fs.mkdirSync(DB_DIR, { recursive: true });
+  // Local file-based SQLite
+  const path = require('path');
+  const fs = require('fs');
+  const DB_DIR = path.join(process.cwd(), 'data');
+  const DB_PATH = path.join(DB_DIR, 'janroku.db');
+
+  if (!fs.existsSync(DB_DIR)) {
+    fs.mkdirSync(DB_DIR, { recursive: true });
+  }
+
+  const localClient = createClient({ url: `file:${DB_PATH}` });
+  localClient.execute('PRAGMA journal_mode = WAL');
+  localClient.execute('PRAGMA foreign_keys = ON');
+  localClient.execute('PRAGMA busy_timeout = 5000');
+  return localClient;
 }
 
-const client = createClient({
-  url: `file:${DB_PATH}`,
-});
-
-// Enable WAL mode and foreign keys
-client.execute('PRAGMA journal_mode = WAL');
-client.execute('PRAGMA foreign_keys = ON');
-client.execute('PRAGMA busy_timeout = 5000');
+const client = getClient();
 
 export const db = drizzle(client, { schema });
 export { client };
