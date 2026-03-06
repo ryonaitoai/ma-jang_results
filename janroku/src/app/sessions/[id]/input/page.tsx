@@ -505,8 +505,8 @@ export default function ScoreInputPage() {
                         <span className={`text-lg font-mono tabular-nums font-bold ${
                           allNonTopFilled
                             ? topAutoValue >= 0
-                              ? 'text-game-gold'
-                              : 'text-game-orange'
+                              ? 'text-game-green'
+                              : 'text-game-red'
                             : 'text-game-muted'
                         }`}>
                           {(topAutoValue >= 0 ? '+' : '') + topAutoValue.toFixed(1)}
@@ -596,7 +596,7 @@ export default function ScoreInputPage() {
                       <span className={`text-lg font-mono tabular-nums font-bold ${
                         rawValue && rawValue !== '-'
                           ? pointValue >= 0
-                            ? 'text-game-gold'
+                            ? 'text-game-green'
                             : 'text-game-red'
                           : 'text-game-muted'
                       }`}>
