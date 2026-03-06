@@ -13,7 +13,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: '#0f1f17',
+  themeColor: '#0a1a10',
 };
 
 export default function RootLayout({
@@ -23,7 +23,15 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ja">
-      <body className="min-h-screen bg-mahjong-surface text-mahjong-text">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=M+PLUS+1:wght@400;500;700;900&family=M+PLUS+1+Code:wght@400;700&display=swap"
+          rel="stylesheet"
+        />
+      </head>
+      <body className="min-h-screen bg-felt-800 text-game-white font-game font-medium">
         <main className="pb-20 max-w-lg mx-auto">
           {children}
         </main>

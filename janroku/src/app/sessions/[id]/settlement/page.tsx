@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { ChevronLeft, Copy, Check, Lock, ArrowRight, Minus, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { GameWindow } from '@/components/ui/game-window';
 import { formatPoints, formatAmount } from '@/lib/utils';
 import { calculateSettlementTransfers } from '@/lib/mahjong/settlement';
 import type { Member } from '@/types';
@@ -34,6 +35,7 @@ interface SessionData {
 }
 
 const CHIP_POINT_OPTIONS = [3, 5] as const;
+const RANK_COLORS = ['text-game-gold', 'text-game-cyan', 'text-game-orange', 'text-game-red'];
 
 export default function SettlementPage() {
   const router = useRouter();
@@ -148,13 +150,6 @@ export default function SettlementPage() {
     setChipCounts((prev) => ({ ...prev, [memberId]: value }));
   };
 
-  const toggleChipSign = (memberId: string) => {
-    setChipCounts((prev) => ({
-      ...prev,
-      [memberId]: -(prev[memberId] || 0),
-    }));
-  };
-
   const handleSettle = async () => {
     if (!confirm('清算を確定しますか？確定後は変更できません。')) return;
     setIsSettling(true);
@@ -212,48 +207,48 @@ export default function SettlementPage() {
   };
 
   if (isLoading) {
-    return <div className="p-4 text-center text-mahjong-muted">読み込み中...</div>;
+    return <div className="p-4 text-center text-game-muted">読み込み中...</div>;
   }
 
   return (
     <div className="p-4">
       {/* Header */}
       <div className="flex items-center gap-2 mb-6">
-        <button onClick={() => router.back()} className="p-2 -ml-2">
+        <button onClick={() => router.back()} className="p-2 -ml-2 text-game-muted hover:text-game-white transition-colors">
           <ChevronLeft size={24} />
         </button>
-        <h1 className="text-xl font-bold">
+        <h1 className="text-xl font-bold text-game-gold">
           {isSettled ? '清算結果' : '清算'}
         </h1>
-        {isSettled && <Lock size={16} className="text-mahjong-muted" />}
+        {isSettled && <Lock size={16} className="text-game-muted" />}
       </div>
 
       {/* Chip Input Section */}
       {!isSettled && (
         <section className="mb-6">
-          <h2 className="text-sm text-mahjong-muted mb-3 uppercase tracking-wider">
+          <h2 className="text-sm text-game-muted mb-3 uppercase tracking-wider">
             チップ
           </h2>
-          <div className="bg-mahjong-card rounded-xl p-4">
+          <GameWindow>
             {/* Chip point value selector */}
             <div className="flex items-center gap-2 mb-4">
-              <span className="text-sm text-mahjong-muted">1枚 =</span>
+              <span className="text-sm text-game-muted">1枚 =</span>
               <div className="flex gap-1">
                 {CHIP_POINT_OPTIONS.map((v) => (
                   <button
                     key={v}
                     onClick={() => setChipPointValue(v)}
-                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                    className={`px-3 py-1.5 rounded-sm text-sm font-medium transition-colors ${
                       chipPointValue === v
-                        ? 'bg-mahjong-accent text-mahjong-surface'
-                        : 'bg-mahjong-surface text-mahjong-muted'
+                        ? 'bg-game-green text-felt-900'
+                        : 'bg-felt-900 text-game-muted'
                     }`}
                   >
                     +{v}pt
                   </button>
                 ))}
               </div>
-              <span className="text-xs text-mahjong-muted ml-auto">
+              <span className="text-xs text-game-dim ml-auto font-mono">
                 (¥{(chipPointValue * (session?.rateValue || 100)).toLocaleString()}/枚)
               </span>
             </div>
@@ -274,10 +269,10 @@ export default function SettlementPage() {
                           const abs = Math.abs(count);
                           setChipCount(m.memberId, abs === 0 ? 0 : -abs);
                         }}
-                        className={`w-8 h-8 rounded-lg flex items-center justify-center active:scale-95 transition-all ${
+                        className={`w-8 h-8 rounded-sm flex items-center justify-center active:scale-95 transition-all ${
                           count < 0
-                            ? 'bg-mahjong-error text-white'
-                            : 'bg-mahjong-surface text-mahjong-muted'
+                            ? 'bg-game-red text-white'
+                            : 'bg-felt-900 text-game-muted'
                         }`}
                       >
                         <Minus size={14} />
@@ -292,8 +287,8 @@ export default function SettlementPage() {
                           const sign = count < 0 ? -1 : 1;
                           setChipCount(m.memberId, abs * sign);
                         }}
-                        className={`w-12 text-center font-mono tabular-nums text-sm font-bold bg-mahjong-surface rounded-lg py-1.5 outline-none focus:ring-2 focus:ring-mahjong-accent ${
-                          count !== 0 ? 'text-mahjong-text' : 'text-mahjong-muted'
+                        className={`w-12 text-center font-mono tabular-nums text-sm font-bold bg-felt-900 rounded-sm py-1.5 outline-none focus:ring-2 focus:ring-game-green ${
+                          count !== 0 ? 'text-game-white' : 'text-game-muted'
                         }`}
                       />
                       <button
@@ -301,10 +296,10 @@ export default function SettlementPage() {
                           const abs = Math.abs(count);
                           setChipCount(m.memberId, abs);
                         }}
-                        className={`w-8 h-8 rounded-lg flex items-center justify-center active:scale-95 transition-all ${
+                        className={`w-8 h-8 rounded-sm flex items-center justify-center active:scale-95 transition-all ${
                           count > 0
-                            ? 'bg-mahjong-accent text-mahjong-surface'
-                            : 'bg-mahjong-surface text-mahjong-muted'
+                            ? 'bg-game-green text-felt-900'
+                            : 'bg-felt-900 text-game-muted'
                         }`}
                       >
                         <Plus size={14} />
@@ -316,45 +311,45 @@ export default function SettlementPage() {
             </div>
 
             {/* Chip count validation */}
-            <div className={`text-xs text-center mt-3 ${chipCountTotal === 0 ? 'text-mahjong-muted' : 'text-mahjong-warning'}`}>
+            <div className={`text-xs text-center mt-3 font-mono ${chipCountTotal === 0 ? 'text-game-muted' : 'text-game-orange'}`}>
               合計: {chipCountTotal > 0 ? '+' : ''}{chipCountTotal}枚
               {chipCountTotal !== 0 && ' (0になるのが正常です)'}
             </div>
-          </div>
+          </GameWindow>
         </section>
       )}
 
       {/* Results */}
       <section className="mb-6">
-        <h2 className="text-sm text-mahjong-muted mb-3 uppercase tracking-wider">
+        <h2 className="text-sm text-game-muted mb-3 uppercase tracking-wider">
           成績
         </h2>
         <div className="space-y-2">
           {results.map((r, i) => (
             <div
               key={r.memberId}
-              className="flex items-center justify-between bg-mahjong-card rounded-xl p-4"
+              className={`flex items-center justify-between bg-felt-700 border border-felt-500/50 rounded-sm p-4 animate-fade-in-up stagger-${i + 1}`}
             >
               <div className="flex items-center gap-3">
-                <span className="text-sm text-mahjong-muted w-6">{i + 1}位</span>
+                <span className={`text-sm font-mono w-6 ${RANK_COLORS[i] || 'text-game-muted'}`}>{i + 1}位</span>
                 <span className="font-medium">{r.memberName}</span>
               </div>
               <div className="text-right">
                 <p
                   className={`font-mono tabular-nums font-bold ${
-                    r.totalPoint >= 0 ? 'text-mahjong-accent' : 'text-mahjong-error'
+                    r.totalPoint >= 0 ? 'text-game-gold' : 'text-game-red'
                   }`}
                 >
                   {formatPoints(r.totalPoint)}
                 </p>
                 {r.totalChips !== 0 && (
-                  <p className="text-xs text-mahjong-warning font-mono tabular-nums">
+                  <p className="text-xs text-game-orange font-mono tabular-nums">
                     chip: {r.totalChips > 0 ? '+' : ''}{r.totalChips} ({r.totalChips > 0 ? '+' : ''}{r.totalChips * chipPointValue}pt)
                   </p>
                 )}
                 <p
                   className={`text-sm font-mono tabular-nums ${
-                    r.totalAmount >= 0 ? 'text-mahjong-accent' : 'text-mahjong-error'
+                    r.totalAmount >= 0 ? 'text-game-gold' : 'text-game-red'
                   }`}
                 >
                   {formatAmount(r.totalAmount)}
@@ -368,19 +363,19 @@ export default function SettlementPage() {
       {/* Transfers */}
       {transfers.length > 0 && (
         <section className="mb-6">
-          <h2 className="text-sm text-mahjong-muted mb-3 uppercase tracking-wider">
+          <h2 className="text-sm text-game-muted mb-3 uppercase tracking-wider">
             送金指示
           </h2>
           <div className="space-y-2">
             {transfers.map((t, i) => (
               <div
                 key={i}
-                className="flex items-center justify-between bg-mahjong-card rounded-xl p-4"
+                className={`flex items-center justify-between bg-felt-700 border border-felt-500/50 rounded-sm p-4 animate-fade-in-up stagger-${i + 1}`}
               >
                 <div className="flex items-center gap-2">
-                  <span className="font-medium text-mahjong-error">{t.fromName}</span>
-                  <ArrowRight size={16} className="text-mahjong-muted" />
-                  <span className="font-medium text-mahjong-accent">{t.toName}</span>
+                  <span className="font-medium text-game-red">{t.fromName}</span>
+                  <ArrowRight size={16} className="text-game-cyan" />
+                  <span className="font-medium text-game-gold">{t.toName}</span>
                 </div>
                 <span className="font-mono tabular-nums font-bold">
                   ¥{t.amount.toLocaleString()}

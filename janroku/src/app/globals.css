@@ -3,20 +3,18 @@
 @tailwind utilities;
 
 :root {
+  /* Legacy CSS variables (for gradual migration) */
   --color-primary: #1a472a;
-  --color-surface: #0f1f17;
-  --color-card: #162b20;
-  --color-accent: #4ade80;
-  --color-warning: #f59e0b;
-  --color-error: #ef4444;
-  --color-text: #e2e8f0;
-  --color-muted: #94a3b8;
+  --color-surface: #0f2418;
+  --color-card: #163020;
+  --color-accent: #44ff88;
+  --color-warning: #ff9900;
+  --color-error: #ff4444;
+  --color-text: #f0f0e8;
+  --color-muted: #6b8068;
 }
 
 body {
-  background-color: var(--color-surface);
-  color: var(--color-text);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -37,10 +35,64 @@ html {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--color-surface);
+  background: #0a1a10;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-primary);
+  background: #2a5438;
   border-radius: 2px;
+}
+
+/* Game window utility */
+@layer components {
+  .game-window {
+    @apply bg-felt-700 border-2 border-frame-outer rounded-sm relative;
+    box-shadow:
+      0 0 8px rgba(68, 255, 136, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+
+  .game-window-inner {
+    @apply absolute inset-[3px] border border-frame-inner rounded-sm pointer-events-none;
+  }
+
+  /* Button base styles */
+  .btn-primary {
+    @apply font-bold rounded-sm text-felt-900;
+    background: linear-gradient(180deg, #44ff88 0%, #2a9d55 100%);
+    border: 2px solid #66ffaa;
+    box-shadow: 0 2px 0 #1a6b38, 0 0 12px rgba(68, 255, 136, 0.3);
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.3);
+  }
+
+  .btn-primary:active {
+    transform: translateY(2px);
+    box-shadow: 0 0 8px rgba(68, 255, 136, 0.2);
+  }
+
+  .btn-secondary {
+    @apply rounded-sm text-game-muted border border-game-dim bg-transparent;
+  }
+
+  .btn-danger {
+    @apply font-bold rounded-sm text-white;
+    background: linear-gradient(180deg, #ff4444 0%, #cc2222 100%);
+    border: 2px solid #ff6666;
+    box-shadow: 0 2px 0 #991111;
+  }
+
+  .btn-danger:active {
+    transform: translateY(2px);
+    box-shadow: none;
+  }
+}
+
+/* Staggered fade-in-up for lists */
+@layer utilities {
+  .stagger-1 { animation-delay: 0ms; }
+  .stagger-2 { animation-delay: 100ms; }
+  .stagger-3 { animation-delay: 200ms; }
+  .stagger-4 { animation-delay: 300ms; }
+  .stagger-5 { animation-delay: 400ms; }
+  .stagger-6 { animation-delay: 500ms; }
 }
