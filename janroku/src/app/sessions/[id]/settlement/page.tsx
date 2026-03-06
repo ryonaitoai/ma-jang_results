@@ -51,6 +51,8 @@ export default function SettlementPage() {
   // Chip input state
   const [chipPointValue, setChipPointValue] = useState<number>(3);
   const [chipCounts, setChipCounts] = useState<Record<string, number>>({});
+  const [editingChipMember, setEditingChipMember] = useState<string | null>(null);
+  const [editingChipValue, setEditingChipValue] = useState('');
 
   const fetchSession = useCallback(async () => {
     try {
@@ -149,6 +151,23 @@ export default function SettlementPage() {
       ...prev,
       [memberId]: (prev[memberId] || 0) + delta,
     }));
+  };
+
+  const startEditingChip = (memberId: string) => {
+    setEditingChipMember(memberId);
+    const current = chipCounts[memberId] || 0;
+    setEditingChipValue(current === 0 ? '' : String(current));
+  };
+
+  const commitChipEdit = () => {
+    if (editingChipMember) {
+      const parsed = parseInt(editingChipValue, 10);
+      setChipCounts((prev) => ({
+        ...prev,
+        [editingChipMember]: isNaN(parsed) ? 0 : parsed,
+      }));
+      setEditingChipMember(null);
+    }
   };
 
   const handleSettle = async () => {
@@ -271,17 +290,31 @@ export default function SettlementPage() {
                       >
                         <Minus size={14} />
                       </button>
-                      <span
-                        className={`w-12 text-center font-mono tabular-nums text-sm font-bold ${
-                          count > 0
-                            ? 'text-mahjong-accent'
-                            : count < 0
-                              ? 'text-mahjong-error'
-                              : 'text-mahjong-muted'
-                        }`}
-                      >
-                        {count > 0 ? `+${count}` : count}
-                      </span>
+                      {editingChipMember === m.memberId ? (
+                        <input
+                          type="number"
+                          inputMode="numeric"
+                          autoFocus
+                          value={editingChipValue}
+                          onChange={(e) => setEditingChipValue(e.target.value)}
+                          onBlur={commitChipEdit}
+                          onKeyDown={(e) => { if (e.key === 'Enter') commitChipEdit(); }}
+                          className="w-14 text-center font-mono tabular-nums text-sm font-bold bg-mahjong-surface rounded-lg py-1 outline-none ring-2 ring-mahjong-accent"
+                        />
+                      ) : (
+                        <button
+                          onClick={() => startEditingChip(m.memberId)}
+                          className={`w-14 text-center font-mono tabular-nums text-sm font-bold py-1 rounded-lg transition-colors hover:bg-mahjong-surface/50 ${
+                            count > 0
+                              ? 'text-mahjong-accent'
+                              : count < 0
+                                ? 'text-mahjong-error'
+                                : 'text-mahjong-muted'
+                          }`}
+                        >
+                          {count > 0 ? `+${count}` : count}
+                        </button>
+                      )}
                       <button
                         onClick={() => updateChipCount(m.memberId, 1)}
                         className="w-8 h-8 rounded-lg bg-mahjong-surface flex items-center justify-center active:scale-95 transition-transform"
