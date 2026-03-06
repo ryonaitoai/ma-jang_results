@@ -38,12 +38,12 @@ export function Numpad({ onInput, onDelete, onClear, showDecimal = true }: Numpa
           key={`${key}-${i}`}
           onClick={() => handlePress(key)}
           disabled={!key}
-          className={`h-11 rounded-lg text-lg font-bold transition-all active:scale-95 disabled:opacity-0 ${
+          className={`h-11 rounded-sm text-lg font-bold transition-all active:scale-95 disabled:opacity-0 border ${
             key === '⌫'
-              ? 'bg-mahjong-error/20 text-mahjong-error'
+              ? 'bg-game-red/10 text-game-red border-game-red/30'
               : key === 'C'
-                ? 'bg-mahjong-card text-mahjong-muted'
-                : 'bg-mahjong-card text-mahjong-text hover:bg-mahjong-primary'
+                ? 'bg-felt-700 text-game-muted border-frame-inner'
+                : 'bg-felt-600 text-game-white border-frame-inner hover:bg-felt-500'
           }`}
         >
           {key === '⌫' ? <Delete size={18} className="mx-auto" /> : key}

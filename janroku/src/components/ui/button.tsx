@@ -15,13 +15,13 @@ export function Button({
   children,
   ...props
 }: ButtonProps) {
-  const baseStyles = 'font-medium rounded-xl transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100';
+  const baseStyles = 'font-medium transition-all disabled:opacity-50 disabled:active:scale-100';
 
   const variants = {
-    primary: 'bg-mahjong-accent text-mahjong-surface hover:bg-mahjong-accent/90',
-    secondary: 'bg-mahjong-primary text-mahjong-text hover:bg-mahjong-primary/80',
-    danger: 'bg-mahjong-error text-white hover:bg-mahjong-error/90',
-    ghost: 'bg-transparent text-mahjong-muted hover:bg-mahjong-primary/30',
+    primary: 'btn-primary',
+    secondary: 'btn-secondary',
+    danger: 'btn-danger',
+    ghost: 'bg-transparent text-game-muted hover:bg-felt-600 rounded-sm',
   };
 
   const sizes = {

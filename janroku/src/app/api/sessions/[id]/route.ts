@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { sessions, sessionMembers, hanchan, hanchanScores } from '@/db/schema';
 import { eq, asc } from 'drizzle-orm';
+import { generateId } from '@/lib/utils';
 
 // GET /api/sessions/[id] - Get session with all data
 export async function GET(

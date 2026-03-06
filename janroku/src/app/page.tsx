@@ -2,8 +2,10 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Plus, ChevronRight, Gamepad2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { GameWindow } from '@/components/ui/game-window';
 import type { Member } from '@/types';
 
 interface SessionSummary {
@@ -41,10 +43,15 @@ export default function HomePage() {
     <div className="p-4">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-mahjong-accent">雀録</h1>
-          <p className="text-xs text-mahjong-muted">セットマージャン成績管理</p>
-        </div>
+        <Image
+          src="/janroku-logo-v2.png"
+          alt="雀録 - セットマージャン成績管理"
+          width={160}
+          height={48}
+          priority
+          className="h-[50px] w-auto"
+          style={{ imageRendering: 'pixelated' }}
+        />
         <Link href="/sessions/new">
           <Button size="sm">
             <Plus size={18} className="mr-1 inline" />
@@ -54,13 +61,13 @@ export default function HomePage() {
       </div>
 
       {isLoading ? (
-        <div className="text-center text-mahjong-muted py-12">読み込み中...</div>
+        <div className="text-center text-game-muted py-12">読み込み中...</div>
       ) : (
         <>
           {/* Active Sessions */}
           {activeSessions.length > 0 && (
             <section className="mb-6">
-              <h2 className="text-sm text-mahjong-muted mb-3 uppercase tracking-wider">
+              <h2 className="text-sm text-game-muted mb-3 uppercase tracking-wider">
                 進行中のセッション
               </h2>
               <div className="space-y-2">
@@ -68,20 +75,20 @@ export default function HomePage() {
                   <Link
                     key={session.id}
                     href={`/sessions/${session.id}`}
-                    className="block bg-mahjong-accent/10 border border-mahjong-accent/30 rounded-xl p-4 transition-all hover:bg-mahjong-accent/20"
+                    className="block border border-game-green/30 bg-game-green/5 rounded-sm p-4 transition-all hover:bg-game-green/10"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <Gamepad2 size={20} className="text-mahjong-accent" />
+                        <Gamepad2 size={20} className="text-game-green animate-blink" />
                         <div>
                           <p className="font-medium">{session.date}</p>
-                          <p className="text-xs text-mahjong-muted">
+                          <p className="text-xs text-game-muted">
                             {session.members.map((m) => m.member.name).join(', ')} ・{' '}
                             {session.hanchan.filter((h) => !h.isVoid).length}半荘
                           </p>
                         </div>
                       </div>
-                      <ChevronRight size={20} className="text-mahjong-muted" />
+                      <ChevronRight size={20} className="text-game-muted" />
                     </div>
                   </Link>
                 ))}
@@ -92,19 +99,21 @@ export default function HomePage() {
           {/* Quick Start */}
           {activeSessions.length === 0 && (
             <section className="mb-6">
-              <div className="bg-mahjong-card rounded-xl p-6 text-center">
-                <p className="text-4xl mb-3">🀄</p>
-                <p className="text-lg font-medium mb-2">対局を始めよう</p>
-                <p className="text-sm text-mahjong-muted mb-4">
-                  メンバーを選んでセッションを開始
-                </p>
-                <Link href="/sessions/new">
-                  <Button className="w-full" size="lg">
-                    <Plus size={20} className="mr-2 inline" />
-                    新規セッション作成
-                  </Button>
-                </Link>
-              </div>
+              <GameWindow>
+                <div className="text-center">
+                  <p className="text-4xl mb-3">🀄</p>
+                  <p className="text-lg font-bold mb-2">対局を始めよう</p>
+                  <p className="text-sm text-game-muted mb-4">
+                    メンバーを選んでセッションを開始
+                  </p>
+                  <Link href="/sessions/new">
+                    <Button className="w-full" size="lg">
+                      <Plus size={20} className="mr-2 inline" />
+                      新規セッション作成
+                    </Button>
+                  </Link>
+                </div>
+              </GameWindow>
             </section>
           )}
 
@@ -112,10 +121,10 @@ export default function HomePage() {
           {recentSessions.length > 0 && (
             <section className="mb-6">
               <div className="flex items-center justify-between mb-3">
-                <h2 className="text-sm text-mahjong-muted uppercase tracking-wider">
+                <h2 className="text-sm text-game-muted uppercase tracking-wider">
                   最近の対局
                 </h2>
-                <Link href="/history" className="text-xs text-mahjong-accent">
+                <Link href="/history" className="text-xs text-game-green">
                   すべて見る
                 </Link>
               </div>
@@ -124,17 +133,17 @@ export default function HomePage() {
                   <Link
                     key={session.id}
                     href={`/sessions/${session.id}`}
-                    className="block bg-mahjong-card rounded-xl p-4 transition-all hover:bg-mahjong-primary/40"
+                    className="block bg-felt-700 rounded-sm p-4 transition-all hover:bg-felt-600 border border-felt-500/50"
                   >
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="font-medium text-sm">{session.date}</p>
-                        <p className="text-xs text-mahjong-muted">
+                        <p className="text-xs text-game-muted">
                           {session.members.map((m) => m.member.name).join(', ')}
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-xs text-mahjong-muted">
+                        <p className="text-xs text-game-muted">
                           {session.hanchan.filter((h) => !h.isVoid).length}半荘
                         </p>
                       </div>

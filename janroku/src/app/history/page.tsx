@@ -34,12 +34,12 @@ export default function HistoryPage() {
 
   return (
     <div className="p-4">
-      <h1 className="text-xl font-bold mb-6">セッション履歴</h1>
+      <h1 className="text-xl font-bold text-game-gold mb-6">セッション履歴</h1>
 
       {isLoading ? (
-        <div className="text-center text-mahjong-muted py-12">読み込み中...</div>
+        <div className="text-center text-game-muted py-12">読み込み中...</div>
       ) : sessions.length === 0 ? (
-        <div className="text-center text-mahjong-muted py-12">
+        <div className="text-center text-game-muted py-12">
           <p className="text-3xl mb-2">📋</p>
           <p>まだ履歴がありません</p>
         </div>
@@ -49,16 +49,16 @@ export default function HistoryPage() {
             <Link
               key={session.id}
               href={`/sessions/${session.id}`}
-              className="block bg-mahjong-card rounded-xl p-4"
+              className="block bg-felt-700 rounded-sm p-4 border border-felt-500/50 hover:bg-felt-600 transition-colors"
             >
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-medium">{session.date}</p>
-                  <p className="text-xs text-mahjong-muted">
+                  <p className="text-xs text-game-muted">
                     {session.members.map((m) => m.member.name).join(', ')}
                   </p>
                 </div>
-                <p className="text-sm text-mahjong-muted">
+                <p className="text-sm text-game-muted">
                   {session.hanchan.filter((h) => !h.isVoid).length}半荘
                 </p>
               </div>

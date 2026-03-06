@@ -3,8 +3,11 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { Trophy, Wifi, WifiOff } from 'lucide-react';
+import { GameWindow } from '@/components/ui/game-window';
 import { formatPoints } from '@/lib/utils';
 import type { Member } from '@/types';
+
+const RANK_COLORS = ['text-game-gold', 'text-game-cyan', 'text-game-orange', 'text-game-red'];
 
 interface HanchanScore {
   memberId: string;
@@ -92,8 +95,8 @@ export default function SessionViewPage() {
 
   if (!data) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-mahjong-surface">
-        <div className="text-center text-mahjong-muted">
+      <div className="flex items-center justify-center min-h-screen bg-felt-800">
+        <div className="text-center text-game-muted">
           <div className="animate-pulse text-4xl mb-4">🀄</div>
           <p>読み込み中...</p>
         </div>
@@ -126,7 +129,7 @@ export default function SessionViewPage() {
   });
 
   return (
-    <div className="flex flex-col min-h-screen bg-mahjong-surface">
+    <div className="flex flex-col min-h-screen bg-felt-800">
       {/* Live indicator header */}
       <div className="flex items-center justify-between p-4 pb-2">
         <div className="flex items-center gap-2">
@@ -137,13 +140,13 @@ export default function SessionViewPage() {
             </span>
             <span className="text-xs font-bold text-red-400 uppercase tracking-wider">LIVE</span>
           </div>
-          <h1 className="text-lg font-bold">雀録</h1>
+          <h1 className="text-lg font-bold text-game-gold">雀録</h1>
         </div>
-        <div className="flex items-center gap-2 text-xs text-mahjong-muted">
+        <div className="flex items-center gap-2 text-xs text-game-muted">
           {isConnected ? (
-            <Wifi size={14} className="text-mahjong-accent" />
+            <Wifi size={14} className="text-game-green" />
           ) : (
-            <WifiOff size={14} className="text-mahjong-error" />
+            <WifiOff size={14} className="text-game-red" />
           )}
           <span>{secondsAgo}秒前</span>
         </div>
@@ -151,48 +154,50 @@ export default function SessionViewPage() {
 
       {/* New hanchan toast */}
       {newHanchan && (
-        <div className="mx-4 mb-2 bg-mahjong-accent/20 text-mahjong-accent text-sm text-center py-2 rounded-lg animate-pulse">
+        <div className="mx-4 mb-2 bg-game-green/20 text-game-green text-sm text-center py-2 rounded-sm animate-pulse">
           新しい半荘が追加されました
         </div>
       )}
 
       {/* Ranking Summary */}
       <div className="px-4 pb-2">
-        <div className="bg-mahjong-card rounded-xl p-3">
-          <div className="grid grid-cols-4 gap-2">
-            {ranked.map((m, i) => {
-              const t = totals.get(m.memberId);
-              const points = t?.points ?? 0;
-              const amount = Math.round(points * (data.session.rateValue || 100));
-              return (
-                <div key={m.memberId} className="text-center">
-                  <div className="flex items-center justify-center gap-1 mb-1">
-                    {i === 0 && <Trophy size={12} className="text-mahjong-warning" />}
-                    <span className="text-xs text-mahjong-muted">{i + 1}位</span>
+        <GameWindow padding={false}>
+          <div className="relative p-3">
+            <div className="grid grid-cols-4 gap-2">
+              {ranked.map((m, i) => {
+                const t = totals.get(m.memberId);
+                const points = t?.points ?? 0;
+                const amount = Math.round(points * (data.session.rateValue || 100));
+                return (
+                  <div key={m.memberId} className="text-center">
+                    <div className="flex items-center justify-center gap-1 mb-1">
+                      {i === 0 && <Trophy size={12} className="text-game-gold" />}
+                      <span className={`text-xs ${RANK_COLORS[i] || 'text-game-muted'}`}>{i + 1}位</span>
+                    </div>
+                    <span className="text-sm">{m.member.avatarEmoji}</span>
+                    <p className="text-xs font-medium truncate">{m.member.name}</p>
+                    <p
+                      className={`text-sm font-mono tabular-nums font-bold ${
+                        points >= 0 ? 'text-game-gold' : 'text-game-red'
+                      }`}
+                    >
+                      {formatPoints(points)}
+                    </p>
+                    <p className="text-xs text-game-dim tabular-nums font-mono">
+                      {amount >= 0 ? '+' : ''}¥{Math.abs(amount).toLocaleString()}
+                    </p>
                   </div>
-                  <span className="text-sm">{m.member.avatarEmoji}</span>
-                  <p className="text-xs font-medium truncate">{m.member.name}</p>
-                  <p
-                    className={`text-sm font-mono tabular-nums font-bold ${
-                      points >= 0 ? 'text-mahjong-accent' : 'text-mahjong-error'
-                    }`}
-                  >
-                    {formatPoints(points)}
-                  </p>
-                  <p className="text-xs text-mahjong-muted tabular-nums">
-                    {amount >= 0 ? '+' : ''}¥{Math.abs(amount).toLocaleString()}
-                  </p>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
-        </div>
+        </GameWindow>
       </div>
 
       {/* Score Table */}
       <div className="flex-1 overflow-x-auto px-4 pb-8">
         {activeHanchan.length === 0 ? (
-          <div className="text-center text-mahjong-muted py-12">
+          <div className="text-center text-game-muted py-12">
             <p className="text-3xl mb-2">⏳</p>
             <p>まだ半荘がありません</p>
             <p className="text-sm">対局の開始をお待ちください</p>
@@ -200,7 +205,7 @@ export default function SessionViewPage() {
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-mahjong-muted text-xs border-b border-mahjong-card">
+              <tr className="text-game-muted text-xs border-b border-felt-500">
                 <th className="py-2 text-left w-10">#</th>
                 {memberOrder.map((m) => (
                   <th key={m.memberId} className="py-2 text-center">
@@ -213,21 +218,21 @@ export default function SessionViewPage() {
             </thead>
             <tbody>
               {activeHanchan.map((h) => (
-                <tr key={h.id} className="border-b border-mahjong-card/50">
-                  <td className="py-2 text-mahjong-muted text-xs">{h.hanchanNumber}</td>
+                <tr key={h.id} className="border-b border-felt-500/50">
+                  <td className="py-2 text-game-cyan text-xs font-mono">{h.hanchanNumber}</td>
                   {memberOrder.map((m) => {
                     const score = h.scores.find((s) => s.memberId === m.memberId);
-                    if (!score) return <td key={m.memberId} className="py-2 text-center">-</td>;
+                    if (!score) return <td key={m.memberId} className="py-2 text-center text-game-dim">-</td>;
                     return (
                       <td key={m.memberId} className="py-2 text-center">
                         {score.rawScore !== null && (
-                          <div className="font-mono tabular-nums text-xs">
+                          <div className="font-mono tabular-nums text-xs text-game-white">
                             {(score.rawScore / 1000).toFixed(0)}
                           </div>
                         )}
                         <div
                           className={`text-[10px] font-mono tabular-nums ${
-                            score.point >= 0 ? 'text-mahjong-accent' : 'text-mahjong-error'
+                            score.point >= 0 ? 'text-game-gold' : 'text-game-red'
                           }`}
                         >
                           {formatPoints(score.point)}
@@ -237,21 +242,21 @@ export default function SessionViewPage() {
                   })}
                 </tr>
               ))}
-              <tr className="font-bold border-t-2 border-mahjong-accent/30">
-                <td className="py-3 text-mahjong-muted text-xs">計</td>
+              <tr className="font-bold border-t-2 border-frame-outer/50">
+                <td className="py-3 text-game-muted text-xs">計</td>
                 {memberOrder.map((m) => {
                   const t = totals.get(m.memberId);
                   return (
                     <td key={m.memberId} className="py-3 text-center">
                       <div
                         className={`font-mono tabular-nums text-sm ${
-                          (t?.points ?? 0) >= 0 ? 'text-mahjong-accent' : 'text-mahjong-error'
+                          (t?.points ?? 0) >= 0 ? 'text-game-gold' : 'text-game-red'
                         }`}
                       >
                         {formatPoints(t?.points ?? 0)}
                       </div>
                       {data.session.chipEnabled && (
-                        <div className="text-[10px] text-mahjong-warning font-mono">
+                        <div className="text-[10px] text-game-orange font-mono">
                           chip:{t?.chips ?? 0}
                         </div>
                       )}
@@ -266,7 +271,7 @@ export default function SessionViewPage() {
 
       {/* Session status */}
       {data.session.status === 'settled' && (
-        <div className="fixed bottom-0 left-0 right-0 bg-mahjong-card border-t border-mahjong-primary/30 p-3 text-center text-sm text-mahjong-muted">
+        <div className="fixed bottom-0 left-0 right-0 bg-felt-900 border-t-2 border-frame-outer p-3 text-center text-sm text-game-muted">
           このセッションは清算済みです
         </div>
       )}

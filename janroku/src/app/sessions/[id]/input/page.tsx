@@ -126,7 +126,7 @@ export default function ScoreInputPage() {
   }, [fetchSession]);
 
   if (isLoading || !session) {
-    return <div className="p-3 text-center text-mahjong-muted">読み込み中...</div>;
+    return <div className="p-3 text-center text-game-muted">読み込み中...</div>;
   }
 
   const members = session.members.sort((a, b) => a.seatOrder - b.seatOrder);
@@ -337,13 +337,13 @@ export default function ScoreInputPage() {
   // ─── Render: Top Selection Step ───
   if (step === 'select_top' && inputMode === 'point') {
     return (
-      <div className="flex flex-col h-screen bg-mahjong-surface">
+      <div className="flex flex-col h-screen bg-felt-800">
         <div className="flex items-center justify-between p-3 pb-1">
           <div className="flex items-center gap-2">
-            <button onClick={() => router.back()} className="p-1 -ml-1">
+            <button onClick={() => router.back()} className="p-1 -ml-1 text-game-muted hover:text-game-white">
               <ChevronLeft size={22} />
             </button>
-            <h1 className="text-base font-bold">
+            <h1 className="text-base font-bold text-game-gold">
               {editHanchanId ? 'スコア修正' : 'スコア入力'}
             </h1>
           </div>
@@ -356,7 +356,7 @@ export default function ScoreInputPage() {
               setRawScoreInputs(raw);
               if (members.length > 0) setActiveField(members[0].memberId);
             }}
-            className="text-xs text-mahjong-muted flex items-center gap-1"
+            className="text-xs text-game-muted flex items-center gap-1"
           >
             <ArrowLeftRight size={14} />
             素点入力
@@ -364,16 +364,16 @@ export default function ScoreInputPage() {
         </div>
 
         <div className="flex-1 flex flex-col items-center justify-center px-4">
-          <Crown size={32} className="text-mahjong-warning mb-3" />
+          <Crown size={32} className="text-game-gold mb-3" />
           <h2 className="text-lg font-bold mb-1">トップは誰？</h2>
-          <p className="text-xs text-mahjong-muted mb-6">1着のメンバーを選択</p>
+          <p className="text-xs text-game-muted mb-6">1着のメンバーを選択</p>
 
           <div className="grid grid-cols-2 gap-2 w-full max-w-sm">
             {members.map((m) => (
               <button
                 key={m.memberId}
                 onClick={() => handleSelectTop(m.memberId)}
-                className="flex flex-col items-center gap-1.5 bg-mahjong-card rounded-xl p-4 active:scale-95 transition-all hover:bg-mahjong-primary/40"
+                className="flex flex-col items-center gap-1.5 bg-felt-700 border border-felt-500/50 rounded-sm p-4 active:scale-95 transition-all hover:bg-felt-600"
               >
                 <span className="text-2xl">{m.member.avatarEmoji}</span>
                 <span className="font-medium text-sm">{m.member.name}</span>
@@ -389,7 +389,7 @@ export default function ScoreInputPage() {
   const isValid = inputMode === 'point' ? pointModeValid : rawValid;
 
   return (
-    <div className="bg-mahjong-surface min-h-screen">
+    <div className="bg-felt-800 min-h-screen">
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2">
         <div className="flex items-center gap-2">
@@ -404,11 +404,11 @@ export default function ScoreInputPage() {
                 router.back();
               }
             }}
-            className="p-1 -ml-1"
+            className="p-1 -ml-1 text-game-muted hover:text-game-white"
           >
             <ChevronLeft size={22} />
           </button>
-          <h1 className="text-base font-bold">
+          <h1 className="text-base font-bold text-game-gold">
             {editHanchanId ? 'スコア修正' : 'スコア入力'}
           </h1>
         </div>
@@ -428,7 +428,7 @@ export default function ScoreInputPage() {
               setTopManual(false);
             }
           }}
-          className="text-xs text-mahjong-muted flex items-center gap-1"
+          className="text-xs text-game-muted flex items-center gap-1"
         >
           <ArrowLeftRight size={14} />
           {inputMode === 'point' ? '素点入力' : 'ポイント入力'}
@@ -440,10 +440,10 @@ export default function ScoreInputPage() {
         <>
           {/* Sum check */}
           <div className="px-3 pb-1">
-            <div className={`text-center text-xs font-mono py-0.5 rounded ${
+            <div className={`text-center text-xs font-mono py-0.5 rounded-sm ${
               isValid
-                ? 'bg-mahjong-accent/20 text-mahjong-accent'
-                : 'bg-mahjong-card text-mahjong-muted'
+                ? 'bg-game-green/20 text-game-green'
+                : 'bg-felt-700 text-game-muted'
             }`}>
               合計: {topManual
                 ? (filledNonTopTotal + parsePoint(pointInputs[topMemberId] || '')).toFixed(1)
@@ -469,19 +469,19 @@ export default function ScoreInputPage() {
                         setActiveType('point');
                       }
                     }}
-                    className={`flex items-center justify-between p-2 rounded-lg transition-all ${
+                    className={`flex items-center justify-between p-2 rounded-sm transition-all ${
                       isTopActive
-                        ? 'bg-mahjong-warning/20 ring-2 ring-mahjong-warning'
+                        ? 'bg-game-gold/20 ring-2 ring-game-gold'
                         : topManual
-                          ? 'bg-mahjong-card'
-                          : 'bg-mahjong-card/60'
+                          ? 'bg-felt-700'
+                          : 'bg-felt-700/60'
                     }`}
                   >
                     <div className="flex items-center gap-1.5">
-                      <Crown size={14} className="text-mahjong-warning" />
+                      <Crown size={14} className="text-game-gold" />
                       <span className="text-base">{topMember.member.avatarEmoji}</span>
                       <span className="font-medium text-sm">{topMember.member.name}</span>
-                      <span className="text-[10px] text-mahjong-warning">TOP</span>
+                      <span className="text-[10px] text-game-gold">TOP</span>
                     </div>
                     <div className="text-right">
                       {topManual ? (
@@ -496,7 +496,7 @@ export default function ScoreInputPage() {
                             }
                           }}
                           className={`text-lg font-mono tabular-nums font-bold cursor-pointer ${
-                            parsePoint(pointInputs[topMemberId] || '') >= 0 ? 'text-mahjong-accent' : 'text-mahjong-error'
+                            parsePoint(pointInputs[topMemberId] || '') >= 0 ? 'text-game-gold' : 'text-game-red'
                           }`}
                         >
                           {pointInputs[topMemberId] || '___'}
@@ -505,9 +505,9 @@ export default function ScoreInputPage() {
                         <span className={`text-lg font-mono tabular-nums font-bold ${
                           allNonTopFilled
                             ? topAutoValue >= 0
-                              ? 'text-mahjong-accent'
-                              : 'text-mahjong-warning'
-                            : 'text-mahjong-muted'
+                              ? 'text-game-gold'
+                              : 'text-game-orange'
+                            : 'text-game-muted'
                         }`}>
                           {(topAutoValue >= 0 ? '+' : '') + topAutoValue.toFixed(1)}
                         </span>
@@ -515,7 +515,7 @@ export default function ScoreInputPage() {
                     </div>
                   </div>
                   <div className="flex items-center justify-between px-1 mt-0.5">
-                    <span className="text-[10px] text-mahjong-muted">
+                    <span className="text-[10px] text-game-muted">
                       {topManual ? '手動入力中' : '自動算出'}
                     </span>
                     <button
@@ -530,7 +530,7 @@ export default function ScoreInputPage() {
                           setPointInputs(rest);
                         }
                       }}
-                      className="text-[10px] text-mahjong-accent"
+                      className="text-[10px] text-game-green"
                     >
                       {topManual ? '自動に戻す' : '手動入力'}
                     </button>
@@ -538,13 +538,13 @@ export default function ScoreInputPage() {
 
                   {/* Warnings */}
                   {!topManual && allNonTopFilled && topAutoValue < 0 && (
-                    <div className="flex items-center gap-1 px-1 text-[10px] text-mahjong-warning">
+                    <div className="flex items-center gap-1 px-1 text-[10px] text-game-orange">
                       <AlertTriangle size={10} />
                       トップがマイナス（要確認）
                     </div>
                   )}
                   {!topManual && allNonTopFilled && Math.abs(topAutoValue) >= 100 && (
-                    <div className="flex items-center gap-1 px-1 text-[10px] text-mahjong-warning">
+                    <div className="flex items-center gap-1 px-1 text-[10px] text-game-orange">
                       <AlertTriangle size={10} />
                       極端に大きい値（要確認）
                     </div>
@@ -562,12 +562,12 @@ export default function ScoreInputPage() {
               return (
                 <div key={m.memberId}>
                   <div
-                    className={`flex items-center justify-between rounded-lg transition-all ${
+                    className={`flex items-center justify-between rounded-sm transition-all ${
                       isActive
                         ? pointValue >= 0 && rawValue && rawValue !== '-'
-                          ? 'bg-mahjong-accent/20 ring-2 ring-mahjong-accent'
-                          : 'bg-mahjong-error/20 ring-2 ring-mahjong-error/50'
-                        : 'bg-mahjong-card'
+                          ? 'bg-game-green/10 ring-2 ring-game-green'
+                          : 'bg-game-red/10 ring-2 ring-game-red/50'
+                        : 'bg-felt-700'
                     }`}
                   >
                     {/* Left: tap to select field */}
@@ -596,9 +596,9 @@ export default function ScoreInputPage() {
                       <span className={`text-lg font-mono tabular-nums font-bold ${
                         rawValue && rawValue !== '-'
                           ? pointValue >= 0
-                            ? 'text-mahjong-accent'
-                            : 'text-mahjong-error'
-                          : 'text-mahjong-muted'
+                            ? 'text-game-gold'
+                            : 'text-game-red'
+                          : 'text-game-muted'
                       }`}>
                         {rawValue || '___'}
                       </span>
@@ -611,13 +611,13 @@ export default function ScoreInputPage() {
                         setActiveField(m.memberId);
                         setActiveType('chip');
                       }}
-                      className={`w-full flex items-center justify-between px-2 py-1 rounded text-xs transition-all mt-0.5 ${
+                      className={`w-full flex items-center justify-between px-2 py-1 rounded-sm text-xs transition-all mt-0.5 ${
                         activeField === m.memberId && activeType === 'chip'
-                          ? 'bg-mahjong-warning/20 ring-1 ring-mahjong-warning'
-                          : 'bg-mahjong-surface'
+                          ? 'bg-game-orange/20 ring-1 ring-game-orange'
+                          : 'bg-felt-900'
                       }`}
                     >
-                      <span className="text-mahjong-muted">チップ</span>
+                      <span className="text-game-muted">チップ</span>
                       <span className="font-mono tabular-nums">{chipInputs[m.memberId] || '0'}枚</span>
                     </button>
                   )}
@@ -632,12 +632,12 @@ export default function ScoreInputPage() {
       {inputMode === 'raw_score' && (
         <>
           <div className="px-3 pb-1">
-            <div className={`text-center text-xs font-mono py-0.5 rounded ${
+            <div className={`text-center text-xs font-mono py-0.5 rounded-sm ${
               rawValid
-                ? 'bg-mahjong-accent/20 text-mahjong-accent'
+                ? 'bg-game-green/20 text-game-green'
                 : rawTotal === 0
-                  ? 'bg-mahjong-card text-mahjong-muted'
-                  : 'bg-mahjong-error/20 text-mahjong-error'
+                  ? 'bg-felt-700 text-game-muted'
+                  : 'bg-game-red/10 text-game-red'
             }`}>
               合計: {rawTotal.toLocaleString()} / {rawExpected.toLocaleString()}
               {rawTotal !== rawExpected && rawTotal !== 0 && ` (${rawTotal > rawExpected ? '+' : ''}${(rawTotal - rawExpected).toLocaleString()})`}
@@ -654,8 +654,8 @@ export default function ScoreInputPage() {
                 <div key={m.memberId}>
                   <div
                     onClick={() => { setActiveField(m.memberId); setActiveType('point'); }}
-                    className={`flex items-center justify-between p-2 rounded-lg transition-all ${
-                      isActive ? 'bg-mahjong-accent/20 ring-2 ring-mahjong-accent' : 'bg-mahjong-card'
+                    className={`flex items-center justify-between p-2 rounded-sm transition-all ${
+                      isActive ? 'bg-game-green/10 ring-2 ring-game-green' : 'bg-felt-700'
                     }`}
                   >
                     <div className="flex items-center gap-1.5">
@@ -664,20 +664,20 @@ export default function ScoreInputPage() {
                     </div>
                     <div className="text-right">
                       <span className="text-lg font-mono tabular-nums">{rawValue || '___'}</span>
-                      <span className="text-[10px] text-mahjong-muted ml-1">{displayScore}</span>
+                      <span className="text-[10px] text-game-muted ml-1">{displayScore}</span>
                     </div>
                   </div>
 
                   {session.chipEnabled && (
                     <button
                       onClick={() => { setActiveField(m.memberId); setActiveType('chip'); }}
-                      className={`w-full flex items-center justify-between px-2 py-1 rounded text-xs transition-all mt-0.5 ${
+                      className={`w-full flex items-center justify-between px-2 py-1 rounded-sm text-xs transition-all mt-0.5 ${
                         activeField === m.memberId && activeType === 'chip'
-                          ? 'bg-mahjong-warning/20 ring-1 ring-mahjong-warning'
-                          : 'bg-mahjong-surface'
+                          ? 'bg-game-orange/20 ring-1 ring-game-orange'
+                          : 'bg-felt-900'
                       }`}
                     >
-                      <span className="text-mahjong-muted">チップ</span>
+                      <span className="text-game-muted">チップ</span>
                       <span className="font-mono tabular-nums">{chipInputs[m.memberId] || '0'}枚</span>
                     </button>
                   )}
@@ -689,7 +689,7 @@ export default function ScoreInputPage() {
       )}
 
       {/* Numpad and Submit */}
-      <div className="p-3 pt-1.5 space-y-1.5 bg-mahjong-surface">
+      <div className="p-3 pt-1.5 space-y-1.5 bg-felt-800">
         <Numpad
           onInput={handleNumInput}
           onDelete={handleDelete}

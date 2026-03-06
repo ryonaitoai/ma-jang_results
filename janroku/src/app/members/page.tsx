@@ -86,7 +86,7 @@ export default function MembersPage() {
   return (
     <div className="p-4">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-xl font-bold">メンバー</h1>
+        <h1 className="text-xl font-bold text-game-gold">メンバー</h1>
         <Button onClick={openAddModal} size="sm">
           <Plus size={18} className="mr-1 inline" />
           追加
@@ -94,9 +94,9 @@ export default function MembersPage() {
       </div>
 
       {isLoading ? (
-        <div className="text-center text-mahjong-muted py-12">読み込み中...</div>
+        <div className="text-center text-game-muted py-12">読み込み中...</div>
       ) : members.length === 0 ? (
-        <div className="text-center text-mahjong-muted py-12">
+        <div className="text-center text-game-muted py-12">
           <p className="text-4xl mb-4">🀄</p>
           <p>メンバーがまだいません</p>
           <p className="text-sm mt-1">「追加」ボタンからメンバーを登録してください</p>
@@ -106,29 +106,29 @@ export default function MembersPage() {
           {members.map((member) => (
             <div
               key={member.id}
-              className="flex items-center justify-between bg-mahjong-card rounded-xl p-4"
+              className="flex items-center justify-between bg-felt-700 border border-felt-500/50 rounded-sm p-4"
             >
               <div className="flex items-center gap-3">
                 <span className="text-2xl">{member.avatarEmoji}</span>
                 <div>
                   <p className="font-medium">{member.name}</p>
                   {member.memo && (
-                    <p className="text-sm text-mahjong-muted">{member.memo}</p>
+                    <p className="text-sm text-game-muted">{member.memo}</p>
                   )}
                 </div>
               </div>
               <div className="flex gap-1">
                 <button
                   onClick={() => openEditModal(member)}
-                  className="p-2 rounded-lg hover:bg-mahjong-surface transition-colors"
+                  className="p-2 rounded-sm hover:bg-felt-600 transition-colors"
                 >
-                  <Pencil size={18} className="text-mahjong-muted" />
+                  <Pencil size={18} className="text-game-muted" />
                 </button>
                 <button
                   onClick={() => handleDeactivate(member)}
-                  className="p-2 rounded-lg hover:bg-mahjong-surface transition-colors"
+                  className="p-2 rounded-sm hover:bg-felt-600 transition-colors"
                 >
-                  <UserX size={18} className="text-mahjong-muted" />
+                  <UserX size={18} className="text-game-muted" />
                 </button>
               </div>
             </div>
@@ -143,28 +143,28 @@ export default function MembersPage() {
       >
         <div className="space-y-4">
           <div>
-            <label className="block text-sm text-mahjong-muted mb-1">名前</label>
+            <label className="block text-sm text-game-muted mb-1">名前</label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="表示名を入力"
-              className="w-full bg-mahjong-surface rounded-xl px-4 py-3 text-mahjong-text focus:outline-none focus:ring-2 focus:ring-mahjong-accent"
+              className="w-full bg-felt-900 rounded-sm px-4 py-3 text-game-white focus:outline-none focus:ring-2 focus:ring-game-green"
               autoFocus
             />
           </div>
 
           <div>
-            <label className="block text-sm text-mahjong-muted mb-2">アバター</label>
+            <label className="block text-sm text-game-muted mb-2">アバター</label>
             <div className="grid grid-cols-8 gap-2">
               {AVATAR_EMOJIS.map((emoji) => (
                 <button
                   key={emoji}
                   onClick={() => setAvatarEmoji(emoji)}
-                  className={`text-2xl p-2 rounded-lg transition-all ${
+                  className={`text-2xl p-2 rounded-sm transition-all ${
                     avatarEmoji === emoji
-                      ? 'bg-mahjong-accent/20 ring-2 ring-mahjong-accent scale-110'
-                      : 'hover:bg-mahjong-surface'
+                      ? 'bg-game-green/20 ring-2 ring-game-green scale-110'
+                      : 'hover:bg-felt-600'
                   }`}
                 >
                   {emoji}
@@ -174,13 +174,13 @@ export default function MembersPage() {
           </div>
 
           <div>
-            <label className="block text-sm text-mahjong-muted mb-1">メモ</label>
+            <label className="block text-sm text-game-muted mb-1">メモ</label>
             <input
               type="text"
               value={memo}
               onChange={(e) => setMemo(e.target.value)}
               placeholder="任意のメモ"
-              className="w-full bg-mahjong-surface rounded-xl px-4 py-3 text-mahjong-text focus:outline-none focus:ring-2 focus:ring-mahjong-accent"
+              className="w-full bg-felt-900 rounded-sm px-4 py-3 text-game-white focus:outline-none focus:ring-2 focus:ring-game-green"
             />
           </div>
 
