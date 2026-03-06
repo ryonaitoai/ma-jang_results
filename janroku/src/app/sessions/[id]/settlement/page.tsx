@@ -51,8 +51,6 @@ export default function SettlementPage() {
   // Chip input state
   const [chipPointValue, setChipPointValue] = useState<number>(3);
   const [chipCounts, setChipCounts] = useState<Record<string, number>>({});
-  const [editingChipMember, setEditingChipMember] = useState<string | null>(null);
-  const [editingChipValue, setEditingChipValue] = useState('');
 
   const fetchSession = useCallback(async () => {
     try {
@@ -146,28 +144,15 @@ export default function SettlementPage() {
 
   const chipCountTotal = Object.values(chipCounts).reduce((sum, c) => sum + c, 0);
 
-  const updateChipCount = (memberId: string, delta: number) => {
+  const setChipCount = (memberId: string, value: number) => {
+    setChipCounts((prev) => ({ ...prev, [memberId]: value }));
+  };
+
+  const toggleChipSign = (memberId: string) => {
     setChipCounts((prev) => ({
       ...prev,
-      [memberId]: (prev[memberId] || 0) + delta,
+      [memberId]: -(prev[memberId] || 0),
     }));
-  };
-
-  const startEditingChip = (memberId: string) => {
-    setEditingChipMember(memberId);
-    const current = chipCounts[memberId] || 0;
-    setEditingChipValue(current === 0 ? '' : String(current));
-  };
-
-  const commitChipEdit = () => {
-    if (editingChipMember) {
-      const parsed = parseInt(editingChipValue, 10);
-      setChipCounts((prev) => ({
-        ...prev,
-        [editingChipMember]: isNaN(parsed) ? 0 : parsed,
-      }));
-      setEditingChipMember(null);
-    }
   };
 
   const handleSettle = async () => {
@@ -283,41 +268,44 @@ export default function SettlementPage() {
                       <span className="text-base">{m.member.avatarEmoji}</span>
                       <span className="text-sm font-medium truncate">{m.member.name}</span>
                     </div>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1.5">
                       <button
-                        onClick={() => updateChipCount(m.memberId, -1)}
-                        className="w-8 h-8 rounded-lg bg-mahjong-surface flex items-center justify-center active:scale-95 transition-transform"
+                        onClick={() => {
+                          const abs = Math.abs(count);
+                          setChipCount(m.memberId, abs === 0 ? 0 : -abs);
+                        }}
+                        className={`w-8 h-8 rounded-lg flex items-center justify-center active:scale-95 transition-all ${
+                          count < 0
+                            ? 'bg-mahjong-error text-white'
+                            : 'bg-mahjong-surface text-mahjong-muted'
+                        }`}
                       >
                         <Minus size={14} />
                       </button>
-                      {editingChipMember === m.memberId ? (
-                        <input
-                          type="number"
-                          inputMode="numeric"
-                          autoFocus
-                          value={editingChipValue}
-                          onChange={(e) => setEditingChipValue(e.target.value)}
-                          onBlur={commitChipEdit}
-                          onKeyDown={(e) => { if (e.key === 'Enter') commitChipEdit(); }}
-                          className="w-14 text-center font-mono tabular-nums text-sm font-bold bg-mahjong-surface rounded-lg py-1 outline-none ring-2 ring-mahjong-accent"
-                        />
-                      ) : (
-                        <button
-                          onClick={() => startEditingChip(m.memberId)}
-                          className={`w-14 text-center font-mono tabular-nums text-sm font-bold py-1 rounded-lg transition-colors hover:bg-mahjong-surface/50 ${
-                            count > 0
-                              ? 'text-mahjong-accent'
-                              : count < 0
-                                ? 'text-mahjong-error'
-                                : 'text-mahjong-muted'
-                          }`}
-                        >
-                          {count > 0 ? `+${count}` : count}
-                        </button>
-                      )}
+                      <input
+                        type="number"
+                        inputMode="numeric"
+                        value={Math.abs(count) || ''}
+                        placeholder="0"
+                        onChange={(e) => {
+                          const abs = Math.abs(parseInt(e.target.value, 10)) || 0;
+                          const sign = count < 0 ? -1 : 1;
+                          setChipCount(m.memberId, abs * sign);
+                        }}
+                        className={`w-12 text-center font-mono tabular-nums text-sm font-bold bg-mahjong-surface rounded-lg py-1.5 outline-none focus:ring-2 focus:ring-mahjong-accent ${
+                          count !== 0 ? 'text-mahjong-text' : 'text-mahjong-muted'
+                        }`}
+                      />
                       <button
-                        onClick={() => updateChipCount(m.memberId, 1)}
-                        className="w-8 h-8 rounded-lg bg-mahjong-surface flex items-center justify-center active:scale-95 transition-transform"
+                        onClick={() => {
+                          const abs = Math.abs(count);
+                          setChipCount(m.memberId, abs);
+                        }}
+                        className={`w-8 h-8 rounded-lg flex items-center justify-center active:scale-95 transition-all ${
+                          count > 0
+                            ? 'bg-mahjong-accent text-mahjong-surface'
+                            : 'bg-mahjong-surface text-mahjong-muted'
+                        }`}
                       >
                         <Plus size={14} />
                       </button>

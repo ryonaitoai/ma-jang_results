@@ -9,6 +9,8 @@ import {
   DollarSign,
   Trophy,
   Share2,
+  UserPlus,
+  Check,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ShareModal } from '@/components/session/share-modal';
@@ -52,6 +54,9 @@ export default function SessionPage() {
   const [session, setSession] = useState<SessionData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showAddMember, setShowAddMember] = useState(false);
+  const [allMembers, setAllMembers] = useState<Member[]>([]);
+  const [addingMemberId, setAddingMemberId] = useState<string | null>(null);
 
   const fetchSession = useCallback(async () => {
     try {
@@ -110,6 +115,39 @@ export default function SessionPage() {
     }
   };
 
+  const openAddMember = async () => {
+    setShowAddMember(true);
+    try {
+      const res = await fetch('/api/members');
+      const data = await res.json();
+      setAllMembers(data);
+    } catch (error) {
+      console.error('Failed to fetch members:', error);
+    }
+  };
+
+  const handleAddMember = async (memberId: string) => {
+    setAddingMemberId(memberId);
+    try {
+      const res = await fetch(`/api/sessions/${sessionId}/members`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ memberId }),
+      });
+      if (res.ok) {
+        await fetchSession();
+        setShowAddMember(false);
+      } else {
+        const error = await res.json();
+        alert(error.error || '追加に失敗しました');
+      }
+    } catch (error) {
+      console.error('Failed to add member:', error);
+    } finally {
+      setAddingMemberId(null);
+    }
+  };
+
   const handleCancelSession = async () => {
     if (!confirm('このセッションをキャンセルしますか？\n入力済みのデータはすべて無効になります。')) return;
     try {
@@ -140,6 +178,14 @@ export default function SessionPage() {
         <div className="flex items-center gap-2">
           {session.status === 'active' && (
             <button
+              onClick={openAddMember}
+              className="p-2 rounded-lg hover:bg-mahjong-card transition-colors"
+            >
+              <UserPlus size={20} className="text-mahjong-muted" />
+            </button>
+          )}
+          {session.status === 'active' && (
+            <button
               onClick={() => setShowShareModal(true)}
               className="p-2 rounded-lg hover:bg-mahjong-card transition-colors"
             >
@@ -147,15 +193,15 @@ export default function SessionPage() {
             </button>
           )}
           {session.status === 'active' && (
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => router.push(`/sessions/${sessionId}/settlement`)}
-          >
-            <DollarSign size={16} className="mr-1 inline" />
-            清算
-          </Button>
-        )}
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => router.push(`/sessions/${sessionId}/settlement`)}
+            >
+              <DollarSign size={16} className="mr-1 inline" />
+              清算
+            </Button>
+          )}
         </div>
       </div>
 
@@ -321,6 +367,45 @@ export default function SessionPage() {
         <div className="px-4 pb-4">
           <div className="bg-mahjong-error/10 text-mahjong-error text-sm text-center py-3 rounded-xl">
             このセッションはキャンセルされました
+          </div>
+        </div>
+      )}
+
+      {/* Add Member Modal */}
+      {showAddMember && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-end justify-center" onClick={() => setShowAddMember(false)}>
+          <div
+            className="bg-mahjong-surface rounded-t-2xl w-full max-w-lg p-4 max-h-[60vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-lg font-bold mb-4">メンバーを追加</h2>
+            <div className="space-y-2">
+              {allMembers
+                .filter((m) => !session.members.some((sm) => sm.memberId === m.id))
+                .map((m) => (
+                  <button
+                    key={m.id}
+                    onClick={() => handleAddMember(m.id)}
+                    disabled={addingMemberId === m.id}
+                    className="w-full flex items-center justify-between p-3 rounded-xl bg-mahjong-card hover:bg-mahjong-card/80 transition-colors disabled:opacity-50"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-xl">{m.avatarEmoji}</span>
+                      <span className="font-medium">{m.name}</span>
+                    </div>
+                    <Plus size={18} className="text-mahjong-accent" />
+                  </button>
+                ))}
+              {allMembers.filter((m) => !session.members.some((sm) => sm.memberId === m.id)).length === 0 && (
+                <p className="text-center text-mahjong-muted py-4">追加できるメンバーがいません</p>
+              )}
+            </div>
+            <button
+              onClick={() => setShowAddMember(false)}
+              className="w-full text-center text-sm text-mahjong-muted py-3 mt-2"
+            >
+              閉じる
+            </button>
           </div>
         </div>
       )}
