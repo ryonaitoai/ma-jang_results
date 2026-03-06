@@ -9,7 +9,7 @@ interface ScoreValueProps {
 
 export function ScoreValue({ value, format, className, size = 'md' }: ScoreValueProps) {
   const color = value > 0
-    ? 'text-game-gold'
+    ? 'text-game-green'
     : value < 0
       ? 'text-game-red'
       : 'text-game-muted';

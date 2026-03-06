@@ -496,7 +496,7 @@ export default function ScoreInputPage() {
                             }
                           }}
                           className={`text-lg font-mono tabular-nums font-bold cursor-pointer ${
-                            parsePoint(pointInputs[topMemberId] || '') >= 0 ? 'text-game-gold' : 'text-game-red'
+                            parsePoint(pointInputs[topMemberId] || '') >= 0 ? 'text-game-green' : 'text-game-red'
                           }`}
                         >
                           {pointInputs[topMemberId] || '___'}

@@ -337,7 +337,7 @@ export default function SettlementPage() {
               <div className="text-right">
                 <p
                   className={`font-mono tabular-nums font-bold ${
-                    r.totalPoint >= 0 ? 'text-game-gold' : 'text-game-red'
+                    r.totalPoint >= 0 ? 'text-game-green' : 'text-game-red'
                   }`}
                 >
                   {formatPoints(r.totalPoint)}
@@ -349,7 +349,7 @@ export default function SettlementPage() {
                 )}
                 <p
                   className={`text-sm font-mono tabular-nums ${
-                    r.totalAmount >= 0 ? 'text-game-gold' : 'text-game-red'
+                    r.totalAmount >= 0 ? 'text-game-green' : 'text-game-red'
                   }`}
                 >
                   {formatAmount(r.totalAmount)}

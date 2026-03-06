@@ -178,7 +178,7 @@ export default function SessionViewPage() {
                     <p className="text-xs font-medium truncate">{m.member.name}</p>
                     <p
                       className={`text-sm font-mono tabular-nums font-bold ${
-                        points >= 0 ? 'text-game-gold' : 'text-game-red'
+                        points >= 0 ? 'text-game-green' : 'text-game-red'
                       }`}
                     >
                       {formatPoints(points)}
@@ -232,7 +232,7 @@ export default function SessionViewPage() {
                         )}
                         <div
                           className={`text-[10px] font-mono tabular-nums ${
-                            score.point >= 0 ? 'text-game-gold' : 'text-game-red'
+                            score.point >= 0 ? 'text-game-green' : 'text-game-red'
                           }`}
                         >
                           {formatPoints(score.point)}
@@ -250,7 +250,7 @@ export default function SessionViewPage() {
                     <td key={m.memberId} className="py-3 text-center">
                       <div
                         className={`font-mono tabular-nums text-sm ${
-                          (t?.points ?? 0) >= 0 ? 'text-game-gold' : 'text-game-red'
+                          (t?.points ?? 0) >= 0 ? 'text-game-green' : 'text-game-red'
                         }`}
                       >
                         {formatPoints(t?.points ?? 0)}

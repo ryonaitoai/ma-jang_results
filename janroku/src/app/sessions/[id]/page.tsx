@@ -234,7 +234,7 @@ export default function SessionPage() {
                     <p className="text-xs font-medium truncate">{m.member.name}</p>
                     <p
                       className={`text-sm font-mono tabular-nums font-bold ${
-                        points >= 0 ? 'text-game-gold' : 'text-game-red'
+                        points >= 0 ? 'text-game-green' : 'text-game-red'
                       }`}
                     >
                       {formatPoints(points)}
