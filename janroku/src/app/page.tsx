@@ -123,7 +123,7 @@ export default function HomePage() {
                 {recentSessions.map((session) => (
                   <Link
                     key={session.id}
-                    href={`/history/${session.id}`}
+                    href={`/sessions/${session.id}`}
                     className="block bg-mahjong-card rounded-xl p-4 transition-all hover:bg-mahjong-primary/40"
                   >
                     <div className="flex items-center justify-between">
