@@ -11,17 +11,18 @@ import {
 } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { generateId } from '@/lib/utils';
-import {
-  calculateSettlementAmounts,
-  calculateSettlementTransfers,
-} from '@/lib/mahjong/settlement';
+import { calculateSettlementTransfers } from '@/lib/mahjong/settlement';
 
 // POST /api/sessions/[id]/settle - Settle the session
 export async function POST(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    const body = await request.json().catch(() => ({}));
+    const chipCounts: Record<string, number> = body.chipCounts || {};
+    const chipPointValue: number = body.chipPointValue || 0;
+
     const session = await db.query.sessions.findFirst({
       where: eq(sessions.id, params.id),
     });
@@ -48,6 +49,7 @@ export async function POST(
     const activeHanchan = allHanchan.filter((h) => !h.isVoid);
 
     // Calculate totals per member
+    const rateValue = session.rateValue || 100;
     const memberResults: {
       memberId: string;
       memberName: string;
@@ -57,7 +59,6 @@ export async function POST(
 
     for (const sm of members) {
       let totalPoint = 0;
-      let totalChips = 0;
 
       for (const h of activeHanchan) {
         const scores = await db
@@ -68,25 +69,29 @@ export async function POST(
         const memberScore = scores.find((s) => s.memberId === sm.memberId);
         if (memberScore) {
           totalPoint += memberScore.point;
-          totalChips += memberScore.chips || 0;
         }
       }
+
+      const chips = chipCounts[sm.memberId] || 0;
 
       memberResults.push({
         memberId: sm.memberId,
         memberName: sm.member.name,
         totalPoint: Math.round(totalPoint * 10) / 10,
-        totalChips,
+        totalChips: chips,
       });
     }
 
-    // Calculate settlement amounts
-    const balances = calculateSettlementAmounts(
-      memberResults,
-      session.rateValue || 100,
-      session.chipValue || 100,
-      session.chipEnabled
-    );
+    // Calculate settlement amounts (point amount + chip amount)
+    const balances = memberResults.map((mr) => {
+      const pointAmount = Math.round(mr.totalPoint * rateValue);
+      const chipAmount = mr.totalChips * chipPointValue * rateValue;
+      return {
+        memberId: mr.memberId,
+        memberName: mr.memberName,
+        amount: pointAmount + chipAmount,
+      };
+    });
 
     // Calculate optimized transfers
     const transfers = calculateSettlementTransfers(balances);
