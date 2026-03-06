@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
     // Create session
     await db.insert(sessions).values({
       id: sessionId,
-      date: date || new Date().toISOString().split('T')[0],
+      date: date || new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' }),
       rulePresetId: rulePresetId || null,
       status: 'active',
       startingPoints,

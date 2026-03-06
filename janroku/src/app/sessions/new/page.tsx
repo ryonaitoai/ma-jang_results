@@ -56,7 +56,7 @@ export default function NewSessionPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          date: new Date().toISOString().split('T')[0],
+          date: new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Tokyo' }),
           memberIds: selectedIds,
           startingPoints,
           returnPoints,
