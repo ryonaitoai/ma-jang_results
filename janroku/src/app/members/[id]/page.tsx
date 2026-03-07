@@ -6,6 +6,35 @@ import { ArrowLeft, Trophy, TrendingDown, Target, Flame } from 'lucide-react';
 import { GameWindow } from '@/components/ui/game-window';
 import { formatPoints, formatAmount } from '@/lib/utils';
 
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ReferenceLine,
+  BarChart,
+  Bar,
+  Cell,
+} from 'recharts';
+
+interface TimelineEntry {
+  index: number;
+  date: string;
+  point: number;
+  cumulative: number;
+  rank: number;
+}
+
+interface MonthlyEntry {
+  month: string;
+  points: number;
+  count: number;
+  averageRank: number;
+}
+
 interface MemberStats {
   member: {
     id: string;
@@ -27,6 +56,8 @@ interface MemberStats {
   tobiCount: number;
   tobiRate: number;
   recentScores: { date: string; point: number; rank: number }[];
+  pointsTimeline: TimelineEntry[];
+  monthlyStats: MonthlyEntry[];
 }
 
 const RANK_COLORS = ['text-game-gold', 'text-game-cyan', 'text-game-orange', 'text-game-red'];
@@ -141,6 +172,80 @@ export default function MemberStatsPage() {
               })}
             </div>
           </GameWindow>
+
+          {/* Points Timeline Chart */}
+          {stats.pointsTimeline.length >= 2 && (
+            <GameWindow title="収支推移">
+              <div className="h-48 -mx-1">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={stats.pointsTimeline} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#2a4a3a" />
+                    <XAxis
+                      dataKey="index"
+                      tick={{ fill: '#7a9a8a', fontSize: 10 }}
+                      tickLine={false}
+                      axisLine={{ stroke: '#3a5a4a' }}
+                    />
+                    <YAxis
+                      tick={{ fill: '#7a9a8a', fontSize: 10 }}
+                      tickLine={false}
+                      axisLine={{ stroke: '#3a5a4a' }}
+                    />
+                    <ReferenceLine y={0} stroke="#5a7a6a" strokeDasharray="3 3" />
+                    <Tooltip
+                      contentStyle={{ backgroundColor: '#1a3a2a', border: '1px solid #3a5a4a', borderRadius: '2px', fontSize: 12 }}
+                      labelFormatter={(v) => `第${v}半荘`}
+                      formatter={(value: number) => [formatPoints(value), '累計']}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="cumulative"
+                      stroke="#4ade80"
+                      strokeWidth={2}
+                      dot={false}
+                      activeDot={{ r: 4, fill: '#4ade80' }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </GameWindow>
+          )}
+
+          {/* Monthly Stats Chart */}
+          {stats.monthlyStats.length >= 2 && (
+            <GameWindow title="月別収支">
+              <div className="h-40 -mx-1">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={stats.monthlyStats} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#2a4a3a" />
+                    <XAxis
+                      dataKey="month"
+                      tick={{ fill: '#7a9a8a', fontSize: 10 }}
+                      tickLine={false}
+                      axisLine={{ stroke: '#3a5a4a' }}
+                      tickFormatter={(v: string) => v.substring(5)}
+                    />
+                    <YAxis
+                      tick={{ fill: '#7a9a8a', fontSize: 10 }}
+                      tickLine={false}
+                      axisLine={{ stroke: '#3a5a4a' }}
+                    />
+                    <ReferenceLine y={0} stroke="#5a7a6a" strokeDasharray="3 3" />
+                    <Tooltip
+                      contentStyle={{ backgroundColor: '#1a3a2a', border: '1px solid #3a5a4a', borderRadius: '2px', fontSize: 12 }}
+                      formatter={(value: number) => [formatPoints(value), '収支']}
+                      labelFormatter={(v: string) => `${v}`}
+                    />
+                    <Bar dataKey="points" radius={[2, 2, 0, 0]}>
+                      {stats.monthlyStats.map((entry, i) => (
+                        <Cell key={i} fill={entry.points >= 0 ? '#4ade80' : '#f87171'} opacity={0.8} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </GameWindow>
+          )}
 
           {/* Detail Stats */}
           <GameWindow title="詳細成績">

@@ -117,8 +117,47 @@ export async function GET(
     const tobiCount = scores.filter((s) => s.rawScore !== null && s.rawScore <= 0).length;
     const tobiRate = tobiCount / totalHanchan;
 
+    // Sort by date + hanchan number for chronological order
+    const chronological = [...scores].sort((a, b) => {
+      const dateCmp = a.sessionDate.localeCompare(b.sessionDate);
+      if (dateCmp !== 0) return dateCmp;
+      const sessionCmp = a.createdAt.localeCompare(b.createdAt);
+      if (sessionCmp !== 0) return sessionCmp;
+      return a.hanchanNumber - b.hanchanNumber;
+    });
+
+    // Cumulative points for chart
+    let cumulative = 0;
+    const pointsTimeline = chronological.map((s, i) => {
+      cumulative += s.point;
+      return {
+        index: i + 1,
+        date: s.sessionDate,
+        point: s.point,
+        cumulative,
+        rank: s.rank,
+      };
+    });
+
+    // Monthly aggregation
+    const monthlyMap = new Map<string, { points: number; count: number; ranks: number[] }>();
+    for (const s of chronological) {
+      const month = s.sessionDate.substring(0, 7); // YYYY-MM
+      const entry = monthlyMap.get(month) || { points: 0, count: 0, ranks: [] };
+      entry.points += s.point;
+      entry.count += 1;
+      entry.ranks.push(s.rank);
+      monthlyMap.set(month, entry);
+    }
+    const monthlyStats = Array.from(monthlyMap.entries()).map(([month, data]) => ({
+      month,
+      points: data.points,
+      count: data.count,
+      averageRank: data.ranks.reduce((a, b) => a + b, 0) / data.ranks.length,
+    }));
+
     // Recent scores (latest 20)
-    const recentScores = scores
+    const recentScores = [...scores]
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
       .slice(0, 20)
       .map((s) => ({
@@ -144,6 +183,8 @@ export async function GET(
       tobiCount,
       tobiRate,
       recentScores,
+      pointsTimeline,
+      monthlyStats,
     });
   } catch (error) {
     console.error('Failed to fetch member stats:', error);
