@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Pencil, UserX } from 'lucide-react';
+import Link from 'next/link';
+import { Plus, Pencil, UserX, ChevronRight } from 'lucide-react';
 import { Modal } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
 import { AVATAR_EMOJIS } from '@/lib/constants';
@@ -108,16 +109,17 @@ export default function MembersPage() {
               key={member.id}
               className="flex items-center justify-between bg-felt-700 border border-felt-500/50 rounded-sm p-4"
             >
-              <div className="flex items-center gap-3">
+              <Link href={`/members/${member.id}`} className="flex items-center gap-3 flex-1 min-w-0">
                 <span className="text-2xl">{member.avatarEmoji}</span>
-                <div>
+                <div className="min-w-0">
                   <p className="font-medium">{member.name}</p>
                   {member.memo && (
-                    <p className="text-sm text-game-muted">{member.memo}</p>
+                    <p className="text-sm text-game-muted truncate">{member.memo}</p>
                   )}
                 </div>
-              </div>
-              <div className="flex gap-1">
+                <ChevronRight size={16} className="text-game-muted ml-auto shrink-0" />
+              </Link>
+              <div className="flex gap-1 ml-2 shrink-0">
                 <button
                   onClick={() => openEditModal(member)}
                   className="p-2 rounded-sm hover:bg-felt-600 transition-colors"
