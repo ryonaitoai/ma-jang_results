@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Plus, ChevronRight, Gamepad2 } from 'lucide-react';
+import { Plus, ChevronRight, Gamepad2, Trophy } from 'lucide-react';
+import { formatPoints } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { GameWindow } from '@/components/ui/game-window';
 import type { Member } from '@/types';
@@ -16,20 +17,33 @@ interface SessionSummary {
   hanchan: { id: string; isVoid: boolean }[];
 }
 
+interface RankingEntry {
+  member: { id: string; name: string; avatarEmoji: string };
+  totalHanchan: number;
+  totalPoints: number;
+  averageRank: number;
+}
+
 export default function HomePage() {
   const [activeSessions, setActiveSessions] = useState<SessionSummary[]>([]);
   const [recentSessions, setRecentSessions] = useState<SessionSummary[]>([]);
+  const [ranking, setRanking] = useState<RankingEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchData = useCallback(async () => {
     try {
-      const res = await fetch('/api/sessions');
-      const data: SessionSummary[] = await res.json();
+      const [sessionsRes, analyticsRes] = await Promise.all([
+        fetch('/api/sessions'),
+        fetch('/api/analytics'),
+      ]);
+      const sessionsData: SessionSummary[] = await sessionsRes.json();
+      const analyticsData: RankingEntry[] = await analyticsRes.json();
 
-      setActiveSessions(data.filter((s) => s.status === 'active'));
-      setRecentSessions(data.filter((s) => s.status === 'settled').slice(0, 5));
+      setActiveSessions(sessionsData.filter((s) => s.status === 'active'));
+      setRecentSessions(sessionsData.filter((s) => s.status === 'settled').slice(0, 5));
+      setRanking(analyticsData.filter((r) => r.totalHanchan > 0).slice(0, 3));
     } catch (error) {
-      console.error('Failed to fetch sessions:', error);
+      console.error('Failed to fetch data:', error);
     } finally {
       setIsLoading(false);
     }
@@ -112,6 +126,41 @@ export default function HomePage() {
                       新規セッション作成
                     </Button>
                   </Link>
+                </div>
+              </GameWindow>
+            </section>
+          )}
+
+          {/* Member Rankings */}
+          {ranking.length > 0 && (
+            <section className="mb-6">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-sm text-game-muted uppercase tracking-wider">
+                  成績ランキング
+                </h2>
+                <Link href="/analytics" className="text-xs text-game-green">
+                  全員の成績
+                </Link>
+              </div>
+              <GameWindow>
+                <div className="space-y-2">
+                  {ranking.map((r, i) => {
+                    const medalColors = ['text-game-gold', 'text-game-cyan', 'text-game-orange'];
+                    return (
+                      <Link
+                        key={r.member.id}
+                        href={`/members/${r.member.id}`}
+                        className="flex items-center gap-3 p-2 rounded-sm hover:bg-felt-600/50 transition-colors"
+                      >
+                        <Trophy size={16} className={medalColors[i]} />
+                        <span className="text-lg">{r.member.avatarEmoji}</span>
+                        <span className="font-medium flex-1">{r.member.name}</span>
+                        <span className={`font-mono tabular-nums font-bold text-sm ${r.totalPoints >= 0 ? 'text-game-green' : 'text-game-red'}`}>
+                          {formatPoints(r.totalPoints)}
+                        </span>
+                      </Link>
+                    );
+                  })}
                 </div>
               </GameWindow>
             </section>

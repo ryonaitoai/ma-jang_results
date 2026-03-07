@@ -117,15 +117,19 @@ export default function AnalyticsPage() {
                     if (s.totalHanchan === 0) return null;
                     const rank = i + 1;
                     return (
-                      <tr key={s.member.id} className="border-b border-felt-500/30">
+                      <tr
+                        key={s.member.id}
+                        className="border-b border-felt-500/30 hover:bg-felt-600/50 cursor-pointer transition-colors"
+                        onClick={() => window.location.href = `/members/${s.member.id}`}
+                      >
                         <td className={`py-3 pl-3 font-bold ${rank <= 3 ? RANK_COLORS[rank - 1] : 'text-game-muted'}`}>
                           {rank}
                         </td>
                         <td className="py-3">
-                          <Link href={`/members/${s.member.id}`} className="flex items-center gap-2 hover:opacity-80">
+                          <div className="flex items-center gap-2">
                             <span className="text-base">{s.member.avatarEmoji}</span>
                             <span className="font-medium text-game-white">{s.member.name}</span>
-                          </Link>
+                          </div>
                         </td>
                         <td className="py-3 text-right font-mono tabular-nums text-game-muted">
                           {s.totalHanchan}
