@@ -60,7 +60,33 @@ export async function PUT(
 ) {
   try {
     const body = await request.json();
-    await db.update(sessions).set(body).where(eq(sessions.id, params.id));
+
+    const session = await db.query.sessions.findFirst({
+      where: eq(sessions.id, params.id),
+    });
+    if (!session) {
+      return NextResponse.json({ error: 'セッションが見つかりません' }, { status: 404 });
+    }
+
+    // Whitelist allowed fields
+    const updateData: Record<string, unknown> = {};
+
+    if (body.memo !== undefined) {
+      updateData.memo = body.memo;
+    }
+
+    if (body.status === 'cancelled' && session.status === 'active') {
+      updateData.status = 'cancelled';
+      updateData.endedAt = body.endedAt || new Date().toISOString();
+    } else if (body.status !== undefined && body.status !== session.status) {
+      return NextResponse.json({ error: '不正なステータス変更です' }, { status: 400 });
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return NextResponse.json({ error: '更新するフィールドがありません' }, { status: 400 });
+    }
+
+    await db.update(sessions).set(updateData).where(eq(sessions.id, params.id));
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Failed to update session:', error);
