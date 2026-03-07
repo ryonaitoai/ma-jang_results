@@ -3,6 +3,9 @@ import { db } from '@/db';
 import { members, hanchanScores, hanchan, sessions, settlements } from '@/db/schema';
 import { eq, and, ne } from 'drizzle-orm';
 
+// Disable static caching — always fetch fresh data
+export const dynamic = 'force-dynamic';
+
 // GET /api/analytics - Get all members' stats for ranking table
 export async function GET() {
   try {

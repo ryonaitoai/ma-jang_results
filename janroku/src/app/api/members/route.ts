@@ -4,6 +4,8 @@ import { members } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { generateId } from '@/lib/utils';
 
+export const dynamic = 'force-dynamic';
+
 // GET /api/members - List all active members
 export async function GET() {
   try {
