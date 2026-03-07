@@ -98,56 +98,44 @@ export default function AnalyticsPage() {
             ))}
           </div>
 
-          {/* Rankings Table */}
+          {/* Rankings */}
           <GameWindow title="メンバー成績ランキング">
-            <div className="overflow-x-auto -mx-3">
-              <table className="w-full text-sm min-w-[500px]">
-                <thead>
-                  <tr className="text-game-muted text-xs border-b border-felt-500">
-                    <th className="py-2 pl-3 text-left w-8">#</th>
-                    <th className="py-2 text-left">メンバー</th>
-                    <th className="py-2 text-right">半荘</th>
-                    <th className="py-2 text-right">収支</th>
-                    <th className="py-2 text-right">平均順位</th>
-                    <th className="py-2 text-right pr-3">1着率</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sorted.map((s, i) => {
-                    if (s.totalHanchan === 0) return null;
-                    const rank = i + 1;
-                    return (
-                      <tr
-                        key={s.member.id}
-                        className="border-b border-felt-500/30 hover:bg-felt-600/50 cursor-pointer transition-colors"
-                        onClick={() => window.location.href = `/members/${s.member.id}`}
-                      >
-                        <td className={`py-3 pl-3 font-bold ${rank <= 3 ? RANK_COLORS[rank - 1] : 'text-game-muted'}`}>
-                          {rank}
-                        </td>
-                        <td className="py-3">
-                          <div className="flex items-center gap-2">
-                            <span className="text-base">{s.member.avatarEmoji}</span>
-                            <span className="font-medium text-game-white">{s.member.name}</span>
-                          </div>
-                        </td>
-                        <td className="py-3 text-right font-mono tabular-nums text-game-muted">
-                          {s.totalHanchan}
-                        </td>
-                        <td className={`py-3 text-right font-mono tabular-nums font-bold ${s.totalPoints >= 0 ? 'text-game-green' : 'text-game-red'}`}>
-                          {formatPoints(s.totalPoints)}
-                        </td>
-                        <td className="py-3 text-right font-mono tabular-nums text-game-white">
-                          {s.averageRank.toFixed(2)}
-                        </td>
-                        <td className="py-3 text-right font-mono tabular-nums pr-3 text-game-gold">
-                          {(s.topRate * 100).toFixed(0)}%
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+            <div className="space-y-1">
+              {sorted.map((s, i) => {
+                if (s.totalHanchan === 0) return null;
+                const rank = i + 1;
+                const sortValue = sortKey === 'totalPoints'
+                  ? formatPoints(s.totalPoints)
+                  : sortKey === 'averageRank'
+                    ? s.averageRank.toFixed(2)
+                    : sortKey === 'topRate'
+                      ? `${(s.topRate * 100).toFixed(0)}%`
+                      : `${s.totalHanchan}半荘`;
+                const sortColor = sortKey === 'totalPoints'
+                  ? s.totalPoints >= 0 ? 'text-game-green' : 'text-game-red'
+                  : sortKey === 'averageRank'
+                    ? 'text-game-white'
+                    : sortKey === 'topRate'
+                      ? 'text-game-gold'
+                      : 'text-game-muted';
+                return (
+                  <Link key={s.member.id} href={`/members/${s.member.id}`}>
+                    <div className="flex items-center gap-2 py-2 px-1 rounded-sm hover:bg-felt-600/50 transition-colors">
+                      <span className={`w-5 text-center font-bold text-sm ${rank <= 3 ? RANK_COLORS[rank - 1] : 'text-game-muted'}`}>
+                        {rank}
+                      </span>
+                      <span className="text-base">{s.member.avatarEmoji}</span>
+                      <div className="flex-1 min-w-0">
+                        <span className="font-medium text-sm text-game-white truncate block">{s.member.name}</span>
+                        <span className="text-[10px] text-game-muted">{s.totalHanchan}半荘</span>
+                      </div>
+                      <span className={`font-mono tabular-nums font-bold text-sm ${sortColor}`}>
+                        {sortValue}
+                      </span>
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           </GameWindow>
 
@@ -175,7 +163,7 @@ export default function AnalyticsPage() {
                       )}
                     </div>
                   </div>
-                  <div className="flex gap-4 mt-2 text-xs text-game-muted">
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-xs text-game-muted">
                     <span>平均順位 <span className="text-game-white font-mono">{s.averageRank.toFixed(2)}</span></span>
                     <span>連対率 <span className="text-game-white font-mono">{(s.rentaiRate * 100).toFixed(0)}%</span></span>
                     <span className="flex gap-1">

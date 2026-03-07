@@ -150,15 +150,16 @@ export default function ScoreInputPage() {
   );
   const topAutoValue = Math.round(-filledNonTopTotal * 10) / 10;
 
-  // Valid when at least 3 non-top members have scores (4-player mahjong)
+  // Valid when exactly 3 non-top members have scores (4-player mahjong)
+  const requiredNonTop = 3;
   const pointModeValid = topManual
     ? (() => {
         const manualTop = parsePoint(pointInputs[topMemberId] || '');
         const total = filledNonTopTotal + manualTop;
-        return Math.abs(total) < 0.01 && filledNonTopMembers.length >= 3 && pointInputs[topMemberId] !== '' && pointInputs[topMemberId] !== '-';
+        return Math.abs(total) < 0.01 && filledNonTopMembers.length === requiredNonTop && pointInputs[topMemberId] !== '' && pointInputs[topMemberId] !== '-';
       })()
-    : filledNonTopMembers.length >= 3;
-  const allNonTopFilled = filledNonTopMembers.length >= 3;
+    : filledNonTopMembers.length === requiredNonTop;
+  const allNonTopFilled = filledNonTopMembers.length === requiredNonTop;
 
   // ─── Raw score mode helpers ───
   const parseRawScore = (input: string): number => {
@@ -706,7 +707,11 @@ export default function ScoreInputPage() {
               <Check size={18} />
               確定
             </span>
-          ) : inputMode === 'point' ? `あと${3 - filledNonTopMembers.length}人のポイントを入力` : '合計が一致していません'}
+          ) : inputMode === 'point'
+            ? filledNonTopMembers.length > requiredNonTop
+              ? `${filledNonTopMembers.length + 1}人分入力されています（4人まで）`
+              : `あと${requiredNonTop - filledNonTopMembers.length}人のポイントを入力`
+            : '合計が一致していません'}
         </Button>
       </div>
     </div>

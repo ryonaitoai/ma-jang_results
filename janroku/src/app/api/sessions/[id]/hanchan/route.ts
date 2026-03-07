@@ -63,56 +63,54 @@ export async function POST(
 
     if (inputMode === 'point' && points) {
       // Point input mode: points are directly entered, ranks auto-determined
-      // Sort by point descending, break ties by seat order
       const sorted = [...points].sort((a, b) => {
         if (b.point !== a.point) return b.point - a.point;
         return (seatOrders.get(a.memberId) ?? 0) - (seatOrders.get(b.memberId) ?? 0);
       });
 
-      // Create hanchan with top member
-      await db.insert(hanchan).values({
-        id: hanchanId,
-        sessionId: params.id,
-        hanchanNumber,
-        topMemberId: topMemberId || null,
-        endedAt: now,
-        isVoid: false,
-        createdAt: now,
-      });
-
-      // Create scores
-      for (let i = 0; i < sorted.length; i++) {
-        const p = sorted[i];
-        await db.insert(hanchanScores).values({
-          id: generateId(),
-          hanchanId,
-          memberId: p.memberId,
-          rawScore: null,
-          rank: i + 1,
-          point: p.point,
-          umaPoint: p.point,
-          inputMode: 'point',
-          isAutoCalculated: p.isAutoCalculated,
-          chips: chips?.[p.memberId] ?? null,
+      await db.transaction(async (tx) => {
+        await tx.insert(hanchan).values({
+          id: hanchanId,
+          sessionId: params.id,
+          hanchanNumber,
+          topMemberId: topMemberId || null,
+          endedAt: now,
+          isVoid: false,
           createdAt: now,
         });
-      }
 
-      // Log operation
-      await db.insert(operationLogs).values({
-        id: generateId(),
-        sessionId: params.id,
-        operationType: 'create_hanchan',
-        payload: JSON.stringify({
-          hanchanId,
-          hanchanNumber,
-          inputMode: 'point',
-          points: sorted.map((p, i) => ({ ...p, rank: i + 1 })),
-          topMemberId,
-          chips,
-        }),
-        createdAt: now,
-        clientTimestamp: now,
+        for (let i = 0; i < sorted.length; i++) {
+          const p = sorted[i];
+          await tx.insert(hanchanScores).values({
+            id: generateId(),
+            hanchanId,
+            memberId: p.memberId,
+            rawScore: null,
+            rank: i + 1,
+            point: p.point,
+            umaPoint: p.point,
+            inputMode: 'point',
+            isAutoCalculated: p.isAutoCalculated,
+            chips: chips?.[p.memberId] ?? null,
+            createdAt: now,
+          });
+        }
+
+        await tx.insert(operationLogs).values({
+          id: generateId(),
+          sessionId: params.id,
+          operationType: 'create_hanchan',
+          payload: JSON.stringify({
+            hanchanId,
+            hanchanNumber,
+            inputMode: 'point',
+            points: sorted.map((p, i) => ({ ...p, rank: i + 1 })),
+            topMemberId,
+            chips,
+          }),
+          createdAt: now,
+          clientTimestamp: now,
+        });
       });
     } else if (scores) {
       // Raw score input mode (legacy)
@@ -133,38 +131,40 @@ export async function POST(
         umaFourth: session.umaFourth,
       });
 
-      await db.insert(hanchan).values({
-        id: hanchanId,
-        sessionId: params.id,
-        hanchanNumber,
-        endedAt: now,
-        isVoid: false,
-        createdAt: now,
-      });
-
-      for (const cs of calculated) {
-        await db.insert(hanchanScores).values({
-          id: generateId(),
-          hanchanId,
-          memberId: cs.memberId,
-          rawScore: cs.rawScore,
-          rank: cs.rank,
-          point: cs.umaPoint,
-          umaPoint: cs.umaPoint,
-          inputMode: 'raw_score',
-          isAutoCalculated: false,
-          chips: chips?.[cs.memberId] ?? null,
+      await db.transaction(async (tx) => {
+        await tx.insert(hanchan).values({
+          id: hanchanId,
+          sessionId: params.id,
+          hanchanNumber,
+          endedAt: now,
+          isVoid: false,
           createdAt: now,
         });
-      }
 
-      await db.insert(operationLogs).values({
-        id: generateId(),
-        sessionId: params.id,
-        operationType: 'create_hanchan',
-        payload: JSON.stringify({ hanchanId, hanchanNumber, inputMode: 'raw_score', scores: calculated, chips }),
-        createdAt: now,
-        clientTimestamp: now,
+        for (const cs of calculated) {
+          await tx.insert(hanchanScores).values({
+            id: generateId(),
+            hanchanId,
+            memberId: cs.memberId,
+            rawScore: cs.rawScore,
+            rank: cs.rank,
+            point: cs.umaPoint,
+            umaPoint: cs.umaPoint,
+            inputMode: 'raw_score',
+            isAutoCalculated: false,
+            chips: chips?.[cs.memberId] ?? null,
+            createdAt: now,
+          });
+        }
+
+        await tx.insert(operationLogs).values({
+          id: generateId(),
+          sessionId: params.id,
+          operationType: 'create_hanchan',
+          payload: JSON.stringify({ hanchanId, hanchanNumber, inputMode: 'raw_score', scores: calculated, chips }),
+          createdAt: now,
+          clientTimestamp: now,
+        });
       });
     } else {
       return NextResponse.json({ error: 'スコアデータが不足しています' }, { status: 400 });

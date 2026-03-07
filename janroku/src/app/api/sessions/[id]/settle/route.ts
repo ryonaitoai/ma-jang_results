@@ -9,7 +9,7 @@ import {
   settlementTransfers,
   operationLogs,
 } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 import { generateId } from '@/lib/utils';
 import { calculateSettlementTransfers } from '@/lib/mahjong/settlement';
 
@@ -98,56 +98,71 @@ export async function POST(
 
     const now = new Date().toISOString();
 
-    // Save settlements
-    for (const mr of memberResults) {
-      const balance = balances.find((b) => b.memberId === mr.memberId);
-      await db.insert(settlements).values({
+    const result = await db.transaction(async (tx) => {
+      // Optimistic lock: atomically update status only if still 'active'
+      const updated = await tx
+        .update(sessions)
+        .set({ status: 'settled', endedAt: now })
+        .where(and(eq(sessions.id, params.id), eq(sessions.status, 'active')));
+
+      if (updated.rowsAffected === 0) {
+        throw new Error('ALREADY_SETTLED');
+      }
+
+      // Clear any partial data from a previous failed attempt (idempotency)
+      await tx.delete(settlements).where(eq(settlements.sessionId, params.id));
+      await tx.delete(settlementTransfers).where(eq(settlementTransfers.sessionId, params.id));
+
+      // Save settlements
+      for (const mr of memberResults) {
+        const balance = balances.find((b) => b.memberId === mr.memberId);
+        await tx.insert(settlements).values({
+          id: generateId(),
+          sessionId: params.id,
+          memberId: mr.memberId,
+          totalPoint: mr.totalPoint,
+          totalChips: mr.totalChips,
+          totalAmount: balance?.amount ?? 0,
+          createdAt: now,
+        });
+      }
+
+      // Save transfers
+      for (const t of transfers) {
+        await tx.insert(settlementTransfers).values({
+          id: generateId(),
+          sessionId: params.id,
+          fromMemberId: t.fromMemberId,
+          toMemberId: t.toMemberId,
+          amount: t.amount,
+          createdAt: now,
+        });
+      }
+
+      // Log operation
+      await tx.insert(operationLogs).values({
         id: generateId(),
         sessionId: params.id,
-        memberId: mr.memberId,
-        totalPoint: mr.totalPoint,
-        totalChips: mr.totalChips,
-        totalAmount: balance?.amount ?? 0,
+        operationType: 'settle',
+        payload: JSON.stringify({ settlements: memberResults, transfers }),
         createdAt: now,
+        clientTimestamp: now,
       });
-    }
 
-    // Save transfers
-    for (const t of transfers) {
-      await db.insert(settlementTransfers).values({
-        id: generateId(),
-        sessionId: params.id,
-        fromMemberId: t.fromMemberId,
-        toMemberId: t.toMemberId,
-        amount: t.amount,
-        createdAt: now,
-      });
-    }
-
-    // Update session status
-    await db
-      .update(sessions)
-      .set({ status: 'settled', endedAt: now })
-      .where(eq(sessions.id, params.id));
-
-    // Log operation
-    await db.insert(operationLogs).values({
-      id: generateId(),
-      sessionId: params.id,
-      operationType: 'settle',
-      payload: JSON.stringify({ settlements: memberResults, transfers }),
-      createdAt: now,
-      clientTimestamp: now,
+      return {
+        settlements: memberResults.map((mr) => ({
+          ...mr,
+          totalAmount: balances.find((b) => b.memberId === mr.memberId)?.amount ?? 0,
+        })),
+        transfers,
+      };
     });
 
-    return NextResponse.json({
-      settlements: memberResults.map((mr) => ({
-        ...mr,
-        totalAmount: balances.find((b) => b.memberId === mr.memberId)?.amount ?? 0,
-      })),
-      transfers,
-    });
+    return NextResponse.json(result);
   } catch (error) {
+    if (error instanceof Error && error.message === 'ALREADY_SETTLED') {
+      return NextResponse.json({ error: 'すでに清算済みです' }, { status: 409 });
+    }
     console.error('Failed to settle session:', error);
     return NextResponse.json({ error: '清算に失敗しました' }, { status: 500 });
   }
